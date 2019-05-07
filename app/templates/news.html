@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div>
+    <ul>
+        {% for obj in articles %}
+
+        <li>
+            <a href="{{ obj.new_url}}"><h3>{{ obj.title }}</h3></a>
+
+            <p><img src="{{ obj.img }}" alt=""></p>
+            <p>{{ obj.brief }} </p><span>{{ obj.source}}</span>
+
+        </li>
+
+        {% endfor %}
+    </ul>
+</div>
+</body>
+</html>

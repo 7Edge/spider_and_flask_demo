@@ -55,7 +55,10 @@ def spider():  # 将汽车之家的新闻的：标题，标题图地址，brief�
     db.session.commit()
     db.session.remove()
 
-    return response.text
+    return '爬取完成'
+
+
+
 
 
 if __name__ == '__main__':
