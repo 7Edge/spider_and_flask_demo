@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from flask import Blueprint
 
 from app import db
+from app.models import AutoHomeNews
 
 crawler_bp = Blueprint(name='crawler', import_name=__name__)
 
@@ -17,12 +18,42 @@ def spider():  # 将汽车之家的新闻的：标题，标题图地址，brief�
     response = requests.get(url='https://www.autohome.com.cn/news/')
     response.encoding = 'gbk'
     bs = BeautifulSoup(markup=response.text, features='html.parser')
-    articles_list = bs.find(name='div', attrs={'id': 'auto-channel-lazyload-article'}).find_all(name='ul')
+    # 读取网页中的数据
+    ul_list = bs.find(name='div', attrs={'id': 'auto-channel-lazyload-article'}).find_all(name='ul')
 
-    for article_item in articles_list:
-        for li in article_item.find_all(name='li'):
-            a = li.find(name='a')
-            print(a)
+    news = list()
+
+    for ul in ul_list:
+        li_list = ul.find_all(name='li')
+        for li in li_list:
+            try:
+                new_url = 'http://' + li.find(name='a').attrs.get('href').rsplit('//', maxsplit=1)[1]
+                print(new_url)
+                img_url = 'http://' + li.find(name='img').get('src').rsplit('//', maxsplit=1)[1]
+                print(img_url)
+                title = li.find(name='h3').text
+                brief = li.find(name='p').text
+
+                # 进入文章详情，获取文章来源
+
+                detail_response = requests.get(url=new_url)
+                detail_response.encoding = 'gbk'
+                article_detail = BeautifulSoup(markup=detail_response.text, features='html.parser')
+                source_tag = article_detail.find(name='div',
+                                                 attrs={'class': 'article-info'}
+                                                 ).find(name='span',
+                                                        attrs={'class': 'source'})
+                source = source_tag.text
+
+                # 构建文章对象
+                article_obj = AutoHomeNews(title=title, brief=brief, img=img_url, source=source, new_url=new_url)
+                news.append(article_obj)
+            except AttributeError:
+                continue
+
+    db.session.add_all(news)
+    db.session.commit()
+    db.session.remove()
 
     return response.text
 
