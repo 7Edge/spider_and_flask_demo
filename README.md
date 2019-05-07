@@ -1,0 +1,2 @@
+# spider_and_flask_demo
+通过request和bs4爬去汽车之家的文章第一页；并在flask视图展示。
